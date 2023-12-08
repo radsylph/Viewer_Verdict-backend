@@ -1,8 +1,8 @@
 export interface ReviewInterface {
-  userId: string;
+  owner: string;
   mediaId: string;
   rating: number;
-  comment?: string;
-  timestamp: Date;
-
+  review?: string;
+  edited?: boolean;
+  timestamp?: Date;
 }

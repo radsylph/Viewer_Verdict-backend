@@ -1,4 +1,5 @@
 export interface SerieInterface {
+  idApi: number;
   name: string;
   overview: string;
   tagline: string;
@@ -8,7 +9,8 @@ export interface SerieInterface {
   totalEpisodes: number;
   totalSeasons: number;
   genres: string[];
+  trailers: string[];
   status: string;
-  voteAverage: number;
-  voteCount: number;
+  voteAverage?: number;
+  voteCount?: number;
 }

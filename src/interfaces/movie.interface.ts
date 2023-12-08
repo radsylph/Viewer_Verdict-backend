@@ -9,6 +9,7 @@ export interface MovieInterface {
   runtime: number;
   voteAverage?: number;
   voteCount?: number;
+  voteTotalPoints?: number;
   adult: boolean;
   language: string;
   media_type?: string;
