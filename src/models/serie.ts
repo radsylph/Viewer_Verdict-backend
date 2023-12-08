@@ -2,6 +2,10 @@ import mongoose from "mongoose";
 import { SerieInterface } from "../interfaces/main";
 
 const SerieSchema = new mongoose.Schema<SerieInterface>({
+  idApi:{
+    type: Number,
+    required: true,
+  },
   name: {
     type: String,
     required: true,
@@ -38,18 +42,22 @@ const SerieSchema = new mongoose.Schema<SerieInterface>({
     type: [String],
     required: true,
   },
+  trailers: {
+    type: [String],
+    required: false,
+  },
   status: {
     type: String,
     required: true,
   },
   voteAverage: {
     type: Number,
-    required: true,
+    required: false,
     default: 0,
   },
   voteCount: {
     type: Number,
-    required: true,
+    required: false,
     default: 0,
   },
 });

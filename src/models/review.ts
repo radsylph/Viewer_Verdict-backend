@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import { ReviewInterface } from "../interfaces/main";
 
 const ReviewSchema = new mongoose.Schema<ReviewInterface>({
-  userId: {
+  owner: {
     type: String,
     required: true,
   },
@@ -14,9 +14,14 @@ const ReviewSchema = new mongoose.Schema<ReviewInterface>({
     type: Number,
     required: true,
   },
-  comment: {
+  review: {
     type: String,
     required: false,
+  },
+  edited: {
+    type: Boolean,
+    required: false,
+    default: false,
   },
 });
 
