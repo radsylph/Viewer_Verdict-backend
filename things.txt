@@ -1,0 +1,27 @@
+cosas por hacer:
+terminar los modelos necesario():
+    hacer el modelo de review():
+        hacer el modelo de rating o ponerlo dentro del mismo modelo de review()
+    hacer el modelo de serie/pelicula():
+        buscar si hacer 2 modelos o hacer logica para que sean uno mismo()
+
+
+hacer el modulo de peliculas():
+    
+
+#GENERAL
+#endpoint para buscar de todo (peliculas,actores y series) https://api.themoviedb.org/3/search/multi 
+#url para hacer el display de las imagenes https://image.tmdb.org/t/p/w600_and_h900_bestv2/ + backdrop_path o el poster_path
+# para ver los videos www.youtube.com/watch?v= + la_key y que tenga el type trailer
+
+#PELICULAS
+#endpoint para buscar peliculas https://api.themoviedb.org/3/search/movie
+#endpoint para buscar los detalles de la pelicula https://api.themoviedb.org/3/movie/ + id_de_la_pelicula
+#endpoint para sacar los videos de una pelicula https://api.themoviedb.org/3/movie/ + id_de_la_pelicula + /videos?api_key=in fugiat
+
+#SERIES
+#endpoint para buscar series https://api.themoviedb.org/3/search/tv
+#endpoint para buscar los detalles de la serie https://api.themoviedb.org/3/tv/ + id_de_la_serie
+#endpoint para sacar los videos de una serie https://api.themoviedb.org/3/tv + id_de_la_pelicula + /videos?api_key=in fugiat
+
+
