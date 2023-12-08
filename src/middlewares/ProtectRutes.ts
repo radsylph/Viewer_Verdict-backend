@@ -11,7 +11,7 @@ const getUserInfo = async (
   res: Response,
   next: NextFunction
 ) => {
-  const authHeader = req.headers.Authorization as string;
+  const authHeader = req.headers.authorization as string;
   const token = authHeader && authHeader.split(" ")[1];
   console.log(token);
   console.log(authHeader);
