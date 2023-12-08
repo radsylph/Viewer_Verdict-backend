@@ -94,8 +94,6 @@ class MediaManager {
             try {
                 const movie = yield main_1.Movie.findOne({ idApi: id });
                 if (!movie) {
-                    const endpoint = endpoints_1.endpoints.getMovieDetails + id;
-                    console.log(endpoint);
                     const movieDetails = yield axios_1.AII.get(endpoints_1.endpoints.getMovieDetails + id).then((movieDetailed) => __awaiter(this, void 0, void 0, function* () {
                         const movie_trailers = yield axios_1.AII.get(endpoints_1.endpoints.getMovieDetails + id + endpoints_1.endpoints.getMovieVideo).then((trailer) => {
                             const trailers = trailer.data.results.map((trailer) => endpoints_1.endpoints.showVideo + trailer.key);
@@ -126,6 +124,7 @@ class MediaManager {
                         };
                         try {
                             yield main_1.Movie.create(movie);
+                            return movie;
                         }
                         catch (error) {
                             console.log(error);
@@ -148,6 +147,121 @@ class MediaManager {
                             msg: "there was an error when finding the movie",
                             path: "MovieManager",
                             location: "getMovie",
+                        },
+                    ],
+                });
+            }
+        });
+    }
+    getSerie(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { id } = req.params;
+            try {
+                const serie = yield main_1.Serie.findOne({ idApi: id });
+                if (!serie) {
+                    const serieDetails = yield axios_1.AII.get(endpoints_1.endpoints.getSerieDetails + id).then((serieDetailed) => __awaiter(this, void 0, void 0, function* () {
+                        const serie_trailers = yield axios_1.AII.get(endpoints_1.endpoints.getSerieDetails + id + endpoints_1.endpoints.getSerieVideo).then((trailers) => {
+                            const serieTrailers = trailers.data.results.map((trailer) => endpoints_1.endpoints.showVideo + trailer.key);
+                            return serieTrailers;
+                        });
+                        const serie_genres = yield main_1.Genres.find({
+                            id: {
+                                $in: serieDetailed.data.genres.map((genre) => genre.id),
+                            },
+                        });
+                        const serie = {
+                            idApi: serieDetailed.data.id,
+                            name: serieDetailed.data.name,
+                            overview: serieDetailed.data.overview,
+                            tagline: serieDetailed.data.tagline,
+                            posters: [
+                                endpoints_1.endpoints.showImages + serieDetailed.data.poster_path,
+                                endpoints_1.endpoints.showImages + serieDetailed.data.backdrop_path,
+                            ],
+                            firstAir: serieDetailed.data.first_air_date,
+                            lastAir: serieDetailed.data.last_air_date,
+                            totalEpisodes: serieDetailed.data.number_of_episodes,
+                            totalSeasons: serieDetailed.data.number_of_seasons,
+                            genres: serie_genres.map((genre) => genre.name),
+                            trailers: serie_trailers ? serie_trailers : "",
+                            status: serieDetailed.data.status,
+                        };
+                        console.log(serie);
+                        try {
+                            yield main_1.Serie.create(serie);
+                            return serie;
+                        }
+                        catch (error) {
+                            console.log(error);
+                            return error;
+                        }
+                    }));
+                    return res
+                        .status(200)
+                        .json({ msg: "Serie from api", serie: serieDetails });
+                }
+                return res.status(200).json({ msg: "Serie from db", serie });
+            }
+            catch (error) {
+                return res.status(500).json({
+                    message: "server error",
+                    errors: [
+                        {
+                            type: "server",
+                            value: error,
+                            msg: "there was an error when finding the serie",
+                            path: "MovieManager",
+                            location: "getSerie",
+                        },
+                    ],
+                });
+            }
+        });
+    }
+    reviewMovie(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { id } = req.params;
+            const { review, rating } = req.body;
+            const serie = yield main_1.Movie.findOne({ idApi: id });
+            if (!serie) {
+                return res.status(404).json({ msg: "Movie not found" });
+            }
+            try {
+                const newReview = yield main_1.Review.create({
+                    review,
+                    rating,
+                    mediaId: serie._id,
+                    owner: req.user_id,
+                });
+                yield main_1.Movie.updateOne({ idApi: id }, {
+                    $inc: { voteCount: 1, voteTotalPoints: rating },
+                });
+                const updatedMovie = yield main_1.Movie.findOne({ idApi: id });
+                if (!updatedMovie ||
+                    updatedMovie.voteTotalPoints === undefined ||
+                    updatedMovie.voteCount === undefined) {
+                    return res
+                        .status(404)
+                        .json({
+                        msg: "Updated movie not found or voteTotalPoints/voteCount is undefined",
+                    });
+                }
+                updatedMovie.voteAverage =
+                    updatedMovie.voteTotalPoints / updatedMovie.voteCount;
+                yield updatedMovie.save();
+                yield newReview.save();
+                return res.status(200).json({ msg: "Review created", review: newReview });
+            }
+            catch (error) {
+                return res.status(500).json({
+                    message: "server error",
+                    errors: [
+                        {
+                            type: "server",
+                            value: error,
+                            msg: "there was an error when finding the serie",
+                            path: "MovieManager",
+                            location: "reviewMovie",
                         },
                     ],
                 });

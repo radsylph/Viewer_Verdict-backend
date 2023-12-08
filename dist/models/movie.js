@@ -47,6 +47,11 @@ const moviewSchema = new mongoose_1.default.Schema({
         required: false,
         default: 0,
     },
+    voteTotalPoints: {
+        type: Number,
+        required: false,
+        default: 0,
+    },
     adult: {
         type: Boolean,
         required: true,

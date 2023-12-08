@@ -1,9 +1,11 @@
 cosas por hacer:
-terminar los modelos necesario():
-    hacer el modelo de review():
-        hacer el modelo de rating o ponerlo dentro del mismo modelo de review()
-    hacer el modelo de serie/pelicula():
-        buscar si hacer 2 modelos o hacer logica para que sean uno mismo()
+terminar los modelos necesario(x):
+    hacer el modelo de review(x):
+        hacer el modelo de rating o ponerlo dentro del mismo modelo de review(x)
+    hacer el modelo de serie/pelicula(x):
+        buscar si hacer 2 modelos o hacer logica para que sean uno mismo(x)
+    hacer los metodos para buscar las series y peliculas(x)
+    hacer los metodos para dar una review a una media()
 
 
 hacer el modulo de peliculas():

@@ -15,7 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const usuario_js_1 = __importDefault(require("../models/usuario.js"));
 const getUserInfo = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const authHeader = req.headers.Authorization;
+    const authHeader = req.headers.authorization;
     const token = authHeader && authHeader.split(" ")[1];
     console.log(token);
     console.log(authHeader);

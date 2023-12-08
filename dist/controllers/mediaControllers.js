@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getMovie = exports.deleteGenres = exports.uploadGenres = exports.searchMedia = void 0;
+exports.reviewMovie = exports.getSerie = exports.getMovie = exports.deleteGenres = exports.uploadGenres = exports.searchMedia = void 0;
 const MediaManager_1 = require("../components/MediaManager");
 const mediaManager = new MediaManager_1.MediaManager();
 const searchMedia = (req, res) => {
@@ -19,3 +19,11 @@ const getMovie = (req, res) => {
     mediaManager.getMovie(req, res);
 };
 exports.getMovie = getMovie;
+const getSerie = (req, res) => {
+    mediaManager.getSerie(req, res);
+};
+exports.getSerie = getSerie;
+const reviewMovie = (req, res) => {
+    mediaManager.reviewMovie(req, res);
+};
+exports.reviewMovie = reviewMovie;

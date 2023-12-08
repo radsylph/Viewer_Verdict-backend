@@ -5,6 +5,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importDefault(require("mongoose"));
 const SerieSchema = new mongoose_1.default.Schema({
+    idApi: {
+        type: Number,
+        required: true,
+    },
     name: {
         type: String,
         required: true,
@@ -41,18 +45,22 @@ const SerieSchema = new mongoose_1.default.Schema({
         type: [String],
         required: true,
     },
+    trailers: {
+        type: [String],
+        required: false,
+    },
     status: {
         type: String,
         required: true,
     },
     voteAverage: {
         type: Number,
-        required: true,
+        required: false,
         default: 0,
     },
     voteCount: {
         type: Number,
-        required: true,
+        required: false,
         default: 0,
     },
 });
