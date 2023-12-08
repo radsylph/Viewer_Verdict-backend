@@ -22,4 +22,19 @@ const getMovie = (req: CustomRequest, res: Response): void => {
   mediaManager.getMovie(req, res);
 };
 
-export { searchMedia, uploadGenres, deleteGenres, getMovie };
+const getSerie = (req: CustomRequest, res: Response): void => {
+  mediaManager.getSerie(req, res);
+};
+
+const reviewMovie = (req: CustomRequest, res: Response): void => {
+  mediaManager.reviewMovie(req, res);
+};
+
+export {
+  searchMedia,
+  uploadGenres,
+  deleteGenres,
+  getMovie,
+  getSerie,
+  reviewMovie,
+};
