@@ -1,7 +1,7 @@
 export interface SerieInterface {
   idApi: number;
   name: string;
-  overview: string;
+  overview?: string;
   tagline: string;
   posters: string[];
   firstAir: string;
@@ -11,6 +11,10 @@ export interface SerieInterface {
   genres: string[];
   trailers: string[];
   status: string;
-  voteAverage?: number;
-  voteCount?: number;
+  publicVoteAverage?: number;
+  publicVoteCount?: number;
+  publicVoteTotalPoints?: number;
+  criticVoteAverage?: number;
+  criticVoteCount?: number;
+  criticVoteTotalPoints?: number;
 }

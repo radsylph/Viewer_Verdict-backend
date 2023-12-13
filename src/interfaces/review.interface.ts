@@ -4,5 +4,7 @@ export interface ReviewInterface {
   rating: number;
   review?: string;
   edited?: boolean;
+  type: string;
   timestamp?: Date;
+  isComment?: boolean;
 }
