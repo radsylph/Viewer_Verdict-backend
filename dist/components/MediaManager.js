@@ -144,12 +144,19 @@ class MediaManager {
                         .json({ msg: "Movie form api", movie: movieDetails });
                 }
                 const movieReviews = yield main_1.Review.find({ mediaId: movie._id }).populate("owner");
+                const criticReviews = movieReviews.filter((review) => review.type === "critic");
+                const publicReviews = movieReviews.filter((review) => review.type === "public");
                 if (!movieReviews) {
                     return res.status(200).json({ msg: "Movie from db", movie });
                 }
                 return res
                     .status(200)
-                    .json({ msg: "Movie from db with reviews", movie, movieReviews });
+                    .json({
+                    msg: "Movie from db with reviews",
+                    movie,
+                    publicReviews,
+                    criticReviews,
+                });
             }
             catch (error) {
                 return res.status(500).json({
@@ -373,7 +380,7 @@ class MediaManager {
             if (owner.isCritic) {
                 console.log("is critic");
                 try {
-                    const updatedReview = yield main_1.Review.updateOne({ mediaId: movie._id, owner: req.user_id }, { review, rating });
+                    const updatedReview = yield main_1.Review.updateOne({ mediaId: movie._id, owner: req.user_id }, { review, rating, edited: true });
                     const updatedMovie = yield main_1.Movie.findOne({ idApi: id });
                     if (updatedMovie &&
                         updatedMovie.criticVoteTotalPoints !== undefined &&
@@ -415,7 +422,7 @@ class MediaManager {
             if (!owner.isCritic) {
                 console.log("is not critic");
                 try {
-                    const updatedReview = yield main_1.Review.updateOne({ mediaId: movie._id, owner: req.user_id }, { review, rating });
+                    const updatedReview = yield main_1.Review.updateOne({ mediaId: movie._id, owner: req.user_id }, { review, rating, edited: true });
                     const updatedMovie = yield main_1.Movie.findOne({ idApi: id });
                     if (updatedMovie &&
                         updatedMovie.publicVoteTotalPoints !== undefined &&
@@ -663,7 +670,7 @@ class MediaManager {
             if (owner.isCritic) {
                 console.log("is critic");
                 try {
-                    const updatedReview = yield main_1.Review.updateOne({ mediaId: serie._id, owner: req.user_id }, { review, rating });
+                    const updatedReview = yield main_1.Review.updateOne({ mediaId: serie._id, owner: req.user_id }, { review, rating, edited: true });
                     const updatedSerie = yield main_1.Serie.findOne({ idApi: id });
                     if (updatedSerie &&
                         updatedSerie.criticVoteTotalPoints !== undefined &&
@@ -703,7 +710,7 @@ class MediaManager {
             if (!owner.isCritic) {
                 console.log("is not critic");
                 try {
-                    const updatedReview = yield main_1.Review.updateOne({ mediaId: serie._id, owner: req.user_id }, { review, rating });
+                    const updatedReview = yield main_1.Review.updateOne({ mediaId: serie._id, owner: req.user_id }, { review, rating, edited: true });
                     const updatedSerie = yield main_1.Serie.findOne({ idApi: id });
                     if (updatedSerie &&
                         updatedSerie.publicVoteTotalPoints !== undefined &&

@@ -159,12 +159,23 @@ class MediaManager {
         "owner"
       );
 
+      const criticReviews = movieReviews.filter(
+        (review) => review.type === "critic"
+      );
+      const publicReviews = movieReviews.filter(
+        (review) => review.type === "public"
+      );
       if (!movieReviews) {
         return res.status(200).json({ msg: "Movie from db", movie });
       }
       return res
         .status(200)
-        .json({ msg: "Movie from db with reviews", movie, movieReviews });
+        .json({
+          msg: "Movie from db with reviews",
+          movie,
+          publicReviews,
+          criticReviews,
+        });
     } catch (error) {
       return res.status(500).json({
         message: "server error",
@@ -412,7 +423,7 @@ class MediaManager {
       try {
         const updatedReview = await Review.updateOne(
           { mediaId: movie._id, owner: req.user_id },
-          { review, rating }
+          { review, rating, edited: true }
         );
 
         const updatedMovie = await Movie.findOne({ idApi: id });
@@ -461,7 +472,7 @@ class MediaManager {
       try {
         const updatedReview = await Review.updateOne(
           { mediaId: movie._id, owner: req.user_id },
-          { review, rating }
+          { review, rating, edited: true }
         );
 
         const updatedMovie = await Movie.findOne({ idApi: id });
@@ -740,7 +751,7 @@ class MediaManager {
       try {
         const updatedReview = await Review.updateOne(
           { mediaId: serie._id, owner: req.user_id },
-          { review, rating }
+          { review, rating, edited: true }
         );
         const updatedSerie = await Serie.findOne({ idApi: id });
         if (
@@ -783,7 +794,7 @@ class MediaManager {
       try {
         const updatedReview = await Review.updateOne(
           { mediaId: serie._id, owner: req.user_id },
-          { review, rating }
+          { review, rating, edited: true }
         );
 
         const updatedSerie = await Serie.findOne({ idApi: id });
@@ -914,7 +925,7 @@ class MediaManager {
 
   async getReviews(req: CustomRequest, res: Response) {
     const { id } = req.params;
-    const {comment} = req.body
+    const { comment } = req.body;
 
     try {
       const reviews = await Review.find({ mediaId: id }).populate("owner");

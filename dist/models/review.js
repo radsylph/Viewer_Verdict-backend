@@ -8,6 +8,7 @@ const ReviewSchema = new mongoose_1.default.Schema({
     owner: {
         type: String,
         required: true,
+        ref: "Usuario",
     },
     mediaId: {
         type: String,
@@ -35,6 +36,8 @@ const ReviewSchema = new mongoose_1.default.Schema({
         required: false,
         default: false,
     },
+}, {
+    timestamps: true,
 });
 const Review = mongoose_1.default.model("Review", ReviewSchema);
 exports.default = Review;

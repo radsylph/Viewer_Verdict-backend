@@ -5,6 +5,6 @@ export interface ReviewInterface {
   review?: string;
   edited?: boolean;
   type: string;
-  timestamp?: Date;
+  createdAt?: Date;
   isComment?: boolean;
 }
