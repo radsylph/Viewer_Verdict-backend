@@ -37,17 +37,32 @@ const moviewSchema = new mongoose_1.default.Schema({
         type: Number,
         required: true,
     },
-    voteAverage: {
+    publicVoteAverage: {
         type: Number,
         required: false,
         default: 0,
     },
-    voteCount: {
+    publicVoteCount: {
         type: Number,
         required: false,
         default: 0,
     },
-    voteTotalPoints: {
+    publicVoteTotalPoints: {
+        type: Number,
+        required: false,
+        default: 0,
+    },
+    criticVoteAverage: {
+        type: Number,
+        required: false,
+        default: 0,
+    },
+    criticVoteCount: {
+        type: Number,
+        required: false,
+        default: 0,
+    },
+    criticVoteTotalPoints: {
         type: Number,
         required: false,
         default: 0,

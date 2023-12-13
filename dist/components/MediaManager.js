@@ -8,11 +8,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MediaManager = void 0;
 const main_1 = require("../models/main");
 const axios_1 = require("../config/axios");
 const endpoints_1 = require("../helpers/endpoints");
+const mongoose_1 = __importDefault(require("mongoose"));
 class MediaManager {
     constructor() { }
     searchMedia(req, res) {
@@ -119,8 +123,12 @@ class MediaManager {
                             adult: movieDetailed.data.adult,
                             trailers: movie_trailers ? movie_trailers : "",
                             language: movieDetailed.data.original_language,
-                            voteAverage: 0,
-                            voteCount: 0,
+                            publicVoteAverage: 0,
+                            publicVoteCount: 0,
+                            publicVoteTotalPoints: 0,
+                            criticVoteAverage: 0,
+                            criticVoteCount: 0,
+                            criticVoteTotalPoints: 0,
                         };
                         try {
                             yield main_1.Movie.create(movie);
@@ -135,7 +143,13 @@ class MediaManager {
                         .status(200)
                         .json({ msg: "Movie form api", movie: movieDetails });
                 }
-                return res.status(200).json({ msg: "Movie from db", movie });
+                const movieReviews = yield main_1.Review.find({ mediaId: movie._id }).populate("owner");
+                if (!movieReviews) {
+                    return res.status(200).json({ msg: "Movie from db", movie });
+                }
+                return res
+                    .status(200)
+                    .json({ msg: "Movie from db with reviews", movie, movieReviews });
             }
             catch (error) {
                 return res.status(500).json({
@@ -200,7 +214,13 @@ class MediaManager {
                         .status(200)
                         .json({ msg: "Serie from api", serie: serieDetails });
                 }
-                return res.status(200).json({ msg: "Serie from db", serie });
+                const serieReviews = yield main_1.Review.find({ mediaId: serie._id }).populate("owner");
+                if (!serieReviews) {
+                    return res.status(200).json({ msg: "Serie from db", serie });
+                }
+                return res
+                    .status(200)
+                    .json({ msg: "Serie from db with reviews", serie, serieReviews });
             }
             catch (error) {
                 return res.status(500).json({
@@ -226,45 +246,620 @@ class MediaManager {
             if (!serie) {
                 return res.status(404).json({ msg: "Movie not found" });
             }
+            const owner = yield main_1.Usuario.findById(req.user_id);
+            if (!owner) {
+                return res.status(404).json({ msg: "User not found" });
+            }
+            const reviewExists = yield main_1.Review.findOne({
+                mediaId: serie._id,
+                owner: req.user_id,
+            });
+            if (reviewExists) {
+                return res.status(400).json({ msg: "you already reviewed this movie" });
+            }
+            if (owner.isCritic) {
+                console.log("is critic");
+                try {
+                    const newReview = yield main_1.Review.create({
+                        review,
+                        rating,
+                        mediaId: serie._id,
+                        owner: req.user_id,
+                        type: "critic",
+                    });
+                    yield main_1.Movie.updateOne({ idApi: id }, {
+                        $inc: { criticVoteCount: 1, criticVoteTotalPoints: rating },
+                    });
+                    const updatedMovie = yield main_1.Movie.findOne({ idApi: id });
+                    if (!updatedMovie ||
+                        updatedMovie.publicVoteTotalPoints === undefined ||
+                        updatedMovie.publicVoteCount === undefined ||
+                        updatedMovie.criticVoteTotalPoints === undefined ||
+                        updatedMovie.criticVoteCount === undefined) {
+                        return res.status(404).json({
+                            msg: "Updated movie not found or voteTotalPoints/voteCount is undefined",
+                        });
+                    }
+                    updatedMovie.criticVoteAverage =
+                        updatedMovie.criticVoteTotalPoints / updatedMovie.criticVoteCount;
+                    yield updatedMovie.save();
+                    yield newReview.save();
+                    return res
+                        .status(200)
+                        .json({ msg: "Review created", review: newReview });
+                }
+                catch (error) {
+                    return res.status(500).json({
+                        message: "server error",
+                        errors: [
+                            {
+                                type: "server",
+                                value: error,
+                                msg: "there was an error when finding the movie",
+                                path: "MovieManager",
+                                location: "reviewMovie",
+                            },
+                        ],
+                    });
+                }
+            }
+            if (!owner.isCritic) {
+                console.log("is not critic");
+                try {
+                    const newReview = yield main_1.Review.create({
+                        review,
+                        rating,
+                        mediaId: serie._id,
+                        owner: req.user_id,
+                        type: "public",
+                    });
+                    yield main_1.Movie.updateOne({ idApi: id }, {
+                        $inc: { publicVoteCount: 1, publicVoteTotalPoints: rating },
+                    });
+                    const updatedMovie = yield main_1.Movie.findOne({ idApi: id });
+                    if (!updatedMovie ||
+                        updatedMovie.publicVoteTotalPoints === undefined ||
+                        updatedMovie.publicVoteCount === undefined ||
+                        updatedMovie.criticVoteTotalPoints === undefined ||
+                        updatedMovie.criticVoteCount === undefined) {
+                        return res.status(404).json({
+                            msg: "Updated movie not found or voteTotalPoints/voteCount is undefined",
+                        });
+                    }
+                    updatedMovie.publicVoteAverage =
+                        updatedMovie.publicVoteTotalPoints / updatedMovie.publicVoteCount;
+                    yield updatedMovie.save();
+                    yield newReview.save();
+                    return res
+                        .status(200)
+                        .json({ msg: "Review created", review: newReview });
+                }
+                catch (error) {
+                    return res.status(500).json({
+                        message: "server error",
+                        errors: [
+                            {
+                                type: "server",
+                                value: error,
+                                msg: "there was an error when finding the movie",
+                                path: "MovieManager",
+                                location: "reviewMovie",
+                            },
+                        ],
+                    });
+                }
+            }
+        });
+    }
+    editReviewMovie(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { id } = req.params;
+            const { review, rating } = req.body;
+            const movie = yield main_1.Movie.findOne({ idApi: id });
+            if (!movie) {
+                return res.status(404).json({ msg: "Serie not found" });
+            }
+            const owner = yield main_1.Usuario.findById(req.user_id);
+            if (!owner) {
+                return res.status(404).json({ msg: "User not found" });
+            }
+            const reviewExists = yield main_1.Review.findOne({
+                mediaId: movie._id,
+                owner: req.user_id,
+            });
+            if (!reviewExists) {
+                return res.status(400).json({ msg: "you haven't reviewed this movie" });
+            }
+            if (owner.isCritic) {
+                console.log("is critic");
+                try {
+                    const updatedReview = yield main_1.Review.updateOne({ mediaId: movie._id, owner: req.user_id }, { review, rating });
+                    const updatedMovie = yield main_1.Movie.findOne({ idApi: id });
+                    if (updatedMovie &&
+                        updatedMovie.criticVoteTotalPoints !== undefined &&
+                        updatedMovie.criticVoteCount !== undefined) {
+                        console.log(updatedMovie.criticVoteTotalPoints);
+                        console.log(typeof reviewExists.rating);
+                        console.log(typeof rating);
+                        updatedMovie.criticVoteTotalPoints =
+                            updatedMovie.criticVoteTotalPoints - reviewExists.rating + rating;
+                        updatedMovie.criticVoteAverage =
+                            updatedMovie.criticVoteTotalPoints / updatedMovie.criticVoteCount;
+                        yield updatedMovie.save();
+                        return res.status(200).json({
+                            msg: "Review updated",
+                            review: updatedReview,
+                        });
+                    }
+                    else {
+                        return res.status(404).json({
+                            msg: "Updated serie not found or voteTotalPoints/voteCount is undefined",
+                        });
+                    }
+                }
+                catch (error) {
+                    return res.status(500).json({
+                        message: "server error",
+                        errors: [
+                            {
+                                type: "server",
+                                value: error,
+                                msg: "there was an error when finding the serie",
+                                path: "MovieManager",
+                                location: "editReviewSerie",
+                            },
+                        ],
+                    });
+                }
+            }
+            if (!owner.isCritic) {
+                console.log("is not critic");
+                try {
+                    const updatedReview = yield main_1.Review.updateOne({ mediaId: movie._id, owner: req.user_id }, { review, rating });
+                    const updatedMovie = yield main_1.Movie.findOne({ idApi: id });
+                    if (updatedMovie &&
+                        updatedMovie.publicVoteTotalPoints !== undefined &&
+                        updatedMovie.publicVoteCount !== undefined) {
+                        updatedMovie.publicVoteTotalPoints =
+                            updatedMovie.publicVoteTotalPoints - reviewExists.rating + rating;
+                        updatedMovie.publicVoteAverage =
+                            updatedMovie.publicVoteTotalPoints / updatedMovie.publicVoteCount ||
+                                0;
+                        yield updatedMovie.save();
+                        return res
+                            .status(200)
+                            .json({ msg: "Review updated", review: updatedReview });
+                    }
+                    else {
+                        return res.status(404).json({
+                            msg: "Updated serie not found or voteTotalPoints/voteCount is undefined",
+                        });
+                    }
+                }
+                catch (error) {
+                    return res.status(500).json({
+                        message: "server error",
+                        errors: [
+                            {
+                                type: "server",
+                                value: error,
+                                msg: "there was an error when finding the serie",
+                                path: "MovieManager",
+                                location: "editReviewSerie",
+                            },
+                        ],
+                    });
+                }
+            }
+        });
+    }
+    deleteReviewMovie(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { id } = req.params;
+            const movie = yield main_1.Movie.findOne({ idApi: id });
+            if (!movie) {
+                return res.status(404).json({ msg: "Movie not found" });
+            }
+            const owner = yield main_1.Usuario.findById(req.user_id);
+            if (!owner) {
+                return res.status(404).json({ msg: "User not found" });
+            }
+            const reviewExists = yield main_1.Review.findOne({
+                mediaId: movie._id,
+                owner: req.user_id,
+            });
+            if (!reviewExists) {
+                return res.status(400).json({ msg: "you haven't reviewed this movie" });
+            }
             try {
-                const newReview = yield main_1.Review.create({
-                    review,
-                    rating,
+                const existingReview = yield main_1.Review.findOne({
+                    mediaId: movie._id,
+                    owner: req.user_id,
+                });
+                if (existingReview.type === "critic") {
+                    const updatedMovie = yield main_1.Movie.findOneAndUpdate({ idApi: id }, {
+                        $inc: { criticVoteTotalPoints: -existingReview.rating },
+                    }, { new: true });
+                    if (!updatedMovie ||
+                        updatedMovie.criticVoteTotalPoints === undefined ||
+                        updatedMovie.criticVoteCount === undefined) {
+                        return res.status(404).json({
+                            msg: "Updated serie not found or voteTotalPoints/voteCount is undefined",
+                        });
+                    }
+                    updatedMovie.criticVoteCount -= 1;
+                    if (updatedMovie.criticVoteCount !== 0) {
+                        updatedMovie.criticVoteAverage =
+                            updatedMovie.criticVoteTotalPoints / updatedMovie.criticVoteCount;
+                    }
+                    else {
+                        updatedMovie.criticVoteAverage = 0;
+                    }
+                    yield existingReview.deleteOne();
+                    yield updatedMovie.save();
+                    return res.status(200).json({ msg: "Review deleted" });
+                }
+                if (existingReview.type === "public") {
+                    const updatedMovie = yield main_1.Movie.findOneAndUpdate({ idApi: id }, {
+                        $inc: { publicVoteTotalPoints: -existingReview.rating },
+                    }, { new: true });
+                    if (!updatedMovie ||
+                        updatedMovie.publicVoteTotalPoints === undefined ||
+                        updatedMovie.publicVoteCount === undefined) {
+                        return res.status(404).json({
+                            msg: "Updated serie not found or voteTotalPoints/voteCount is undefined",
+                        });
+                    }
+                    updatedMovie.publicVoteCount -= 1;
+                    if (updatedMovie.publicVoteCount !== 0) {
+                        updatedMovie.publicVoteAverage =
+                            updatedMovie.publicVoteTotalPoints / updatedMovie.criticVoteCount;
+                    }
+                    else {
+                        updatedMovie.publicVoteAverage = 0;
+                    }
+                    yield existingReview.deleteOne();
+                    yield updatedMovie.save();
+                    return res.status(200).json({ msg: "Review deleted" });
+                }
+            }
+            catch (error) {
+                return res.status(500).json({ msg: "Server error", error });
+            }
+        });
+    }
+    reviewSerie(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { id } = req.params;
+            const { review, rating } = req.body;
+            const serie = yield main_1.Serie.findOne({ idApi: id });
+            if (!serie) {
+                return res.status(404).json({ msg: "Serie not found" });
+            }
+            const owner = yield main_1.Usuario.findById(req.user_id);
+            if (!owner) {
+                return res.status(404).json({ msg: "User not found" });
+            }
+            const reviewExists = yield main_1.Review.findOne({
+                mediaId: serie._id,
+                owner: req.user_id,
+            });
+            if (reviewExists) {
+                return res.status(400).json({ msg: "you already reviewed this serie" });
+            }
+            if (owner.isCritic) {
+                console.log("is critic");
+                try {
+                    const newReview = yield main_1.Review.create({
+                        review,
+                        rating,
+                        mediaId: serie._id,
+                        owner: req.user_id,
+                        type: "critic",
+                    });
+                    yield main_1.Serie.updateOne({ idApi: id }, {
+                        $inc: { criticVoteCount: 1, criticVoteTotalPoints: rating },
+                    });
+                    const updatedSerie = yield main_1.Serie.findOne({ idApi: id });
+                    if (!updatedSerie ||
+                        updatedSerie.publicVoteTotalPoints === undefined ||
+                        updatedSerie.publicVoteCount === undefined ||
+                        updatedSerie.criticVoteTotalPoints === undefined ||
+                        updatedSerie.criticVoteCount === undefined) {
+                        return res.status(404).json({
+                            msg: "Updated serie not found or voteTotalPoints/voteCount is undefined",
+                        });
+                    }
+                    updatedSerie.criticVoteAverage =
+                        updatedSerie.criticVoteTotalPoints / updatedSerie.criticVoteCount;
+                    yield updatedSerie.save();
+                    yield newReview.save();
+                    return res
+                        .status(200)
+                        .json({ msg: "Review created", review: newReview });
+                }
+                catch (error) {
+                    return res.status(500).json({
+                        message: "server error",
+                        errors: [
+                            {
+                                type: "server",
+                                value: error,
+                                msg: "there was an error when finding the serie",
+                                path: "MovieManager",
+                                location: "reviewSerie",
+                            },
+                        ],
+                    });
+                }
+            }
+            if (!owner.isCritic) {
+                console.log("is not critic");
+                try {
+                    const newReview = yield main_1.Review.create({
+                        review,
+                        rating,
+                        mediaId: serie._id,
+                        owner: req.user_id,
+                        type: "public",
+                    });
+                    yield main_1.Serie.updateOne({ idApi: id }, {
+                        $inc: { publicVoteCount: 1, publicVoteTotalPoints: rating },
+                    });
+                    const updatedSerie = yield main_1.Serie.findOne({ idApi: id });
+                    if (!updatedSerie ||
+                        updatedSerie.publicVoteTotalPoints === undefined ||
+                        updatedSerie.publicVoteCount === undefined ||
+                        updatedSerie.criticVoteTotalPoints === undefined ||
+                        updatedSerie.criticVoteCount === undefined) {
+                        return res.status(404).json({
+                            msg: "Updated serie not found or voteTotalPoints/voteCount is undefined",
+                        });
+                    }
+                    updatedSerie.publicVoteAverage =
+                        updatedSerie.publicVoteTotalPoints / updatedSerie.publicVoteCount;
+                    yield updatedSerie.save();
+                    yield newReview.save();
+                    return res
+                        .status(200)
+                        .json({ msg: "Review created", review: newReview });
+                }
+                catch (error) {
+                    return res.status(500).json({
+                        message: "server error",
+                        errors: [
+                            {
+                                type: "server",
+                                value: error,
+                                msg: "there was an error when finding the serie",
+                                path: "MovieManager",
+                                location: "reviewSerie",
+                            },
+                        ],
+                    });
+                }
+            }
+        });
+    }
+    editReviewSerie(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { id } = req.params;
+            const { review, rating } = req.body;
+            const serie = yield main_1.Serie.findOne({ idApi: id });
+            if (!serie) {
+                return res.status(404).json({ msg: "Serie not found" });
+            }
+            const owner = yield main_1.Usuario.findById(req.user_id);
+            if (!owner) {
+                return res.status(404).json({ msg: "User not found" });
+            }
+            const reviewExists = yield main_1.Review.findOne({
+                mediaId: serie._id,
+                owner: req.user_id,
+            });
+            if (!reviewExists) {
+                return res.status(400).json({ msg: "you haven't reviewed this serie" });
+            }
+            if (owner.isCritic) {
+                console.log("is critic");
+                try {
+                    const updatedReview = yield main_1.Review.updateOne({ mediaId: serie._id, owner: req.user_id }, { review, rating });
+                    const updatedSerie = yield main_1.Serie.findOne({ idApi: id });
+                    if (updatedSerie &&
+                        updatedSerie.criticVoteTotalPoints !== undefined &&
+                        updatedSerie.criticVoteCount !== undefined) {
+                        updatedSerie.criticVoteTotalPoints =
+                            updatedSerie.criticVoteTotalPoints - reviewExists.rating + rating;
+                        updatedSerie.criticVoteAverage =
+                            updatedSerie.criticVoteTotalPoints / updatedSerie.criticVoteCount;
+                        yield updatedSerie.save();
+                        return res.status(200).json({
+                            msg: "Review updated",
+                            review: updatedReview,
+                            serie: updatedSerie,
+                        });
+                    }
+                    else {
+                        return res.status(404).json({
+                            msg: "Updated serie not found or voteTotalPoints/voteCount is undefined",
+                        });
+                    }
+                }
+                catch (error) {
+                    return res.status(500).json({
+                        message: "server error",
+                        errors: [
+                            {
+                                type: "server",
+                                value: error,
+                                msg: "there was an error when finding the serie",
+                                path: "MovieManager",
+                                location: "editReviewSerie",
+                            },
+                        ],
+                    });
+                }
+            }
+            if (!owner.isCritic) {
+                console.log("is not critic");
+                try {
+                    const updatedReview = yield main_1.Review.updateOne({ mediaId: serie._id, owner: req.user_id }, { review, rating });
+                    const updatedSerie = yield main_1.Serie.findOne({ idApi: id });
+                    if (updatedSerie &&
+                        updatedSerie.publicVoteTotalPoints !== undefined &&
+                        updatedSerie.publicVoteCount !== undefined) {
+                        updatedSerie.publicVoteTotalPoints =
+                            updatedSerie.publicVoteTotalPoints - reviewExists.rating + rating;
+                        updatedSerie.publicVoteAverage =
+                            updatedSerie.publicVoteTotalPoints / updatedSerie.publicVoteCount;
+                        yield updatedSerie.save();
+                        return res
+                            .status(200)
+                            .json({ msg: "Review updated", review: updatedReview });
+                    }
+                    else {
+                        return res.status(404).json({
+                            msg: "Updated serie not found or voteTotalPoints/voteCount is undefined",
+                        });
+                    }
+                }
+                catch (error) {
+                    return res.status(500).json({
+                        message: "server error",
+                        errors: [
+                            {
+                                type: "server",
+                                value: error,
+                                msg: "there was an error when finding the serie",
+                                path: "MovieManager",
+                                location: "editReviewSerie",
+                            },
+                        ],
+                    });
+                }
+            }
+        });
+    }
+    deleteReviewSerie(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { id } = req.params;
+            const serie = yield main_1.Serie.findOne({ idApi: id });
+            if (!serie) {
+                return res.status(404).json({ msg: "Serie not found" });
+            }
+            const owner = yield main_1.Usuario.findById(req.user_id);
+            if (!owner) {
+                return res.status(404).json({ msg: "User not found" });
+            }
+            const reviewExists = yield main_1.Review.findOne({
+                mediaId: serie._id,
+                owner: req.user_id,
+            });
+            if (!reviewExists) {
+                return res.status(400).json({ msg: "you haven't reviewed this serie" });
+            }
+            try {
+                const existingReview = yield main_1.Review.findOne({
                     mediaId: serie._id,
                     owner: req.user_id,
                 });
-                yield main_1.Movie.updateOne({ idApi: id }, {
-                    $inc: { voteCount: 1, voteTotalPoints: rating },
-                });
-                const updatedMovie = yield main_1.Movie.findOne({ idApi: id });
-                if (!updatedMovie ||
-                    updatedMovie.voteTotalPoints === undefined ||
-                    updatedMovie.voteCount === undefined) {
-                    return res
-                        .status(404)
-                        .json({
-                        msg: "Updated movie not found or voteTotalPoints/voteCount is undefined",
-                    });
+                if (existingReview.type === "critic") {
+                    const updatedSerie = yield main_1.Serie.findOneAndUpdate({ idApi: id }, {
+                        $inc: { criticVoteTotalPoints: -existingReview.rating },
+                    }, { new: true });
+                    if (!updatedSerie ||
+                        updatedSerie.criticVoteTotalPoints === undefined ||
+                        updatedSerie.criticVoteCount === undefined) {
+                        return res.status(404).json({
+                            msg: "Updated serie not found or voteTotalPoints/voteCount is undefined",
+                        });
+                    }
+                    updatedSerie.criticVoteCount -= 1;
+                    if (updatedSerie.publicVoteCount !== 0) {
+                        updatedSerie.publicVoteAverage =
+                            updatedSerie.publicVoteTotalPoints / updatedSerie.publicVoteCount;
+                    }
+                    else {
+                        updatedSerie.publicVoteAverage = 0;
+                    }
+                    yield existingReview.deleteOne();
+                    yield updatedSerie.save();
+                    return res.status(200).json({ msg: "Review deleted" });
                 }
-                updatedMovie.voteAverage =
-                    updatedMovie.voteTotalPoints / updatedMovie.voteCount;
-                yield updatedMovie.save();
-                yield newReview.save();
-                return res.status(200).json({ msg: "Review created", review: newReview });
+                if (existingReview.type === "public") {
+                    const updatedSerie = yield main_1.Serie.findOneAndUpdate({ idApi: id }, {
+                        $inc: { publicVoteTotalPoints: -existingReview.rating },
+                    }, { new: true });
+                    if (!updatedSerie ||
+                        updatedSerie.publicVoteTotalPoints === undefined ||
+                        updatedSerie.publicVoteCount === undefined) {
+                        return res.status(404).json({
+                            msg: "Updated serie not found or voteTotalPoints/voteCount is undefined",
+                        });
+                    }
+                    updatedSerie.publicVoteCount -= 1;
+                    if (updatedSerie.publicVoteCount !== 0) {
+                        updatedSerie.publicVoteAverage =
+                            updatedSerie.publicVoteTotalPoints / updatedSerie.criticVoteCount;
+                    }
+                    else {
+                        updatedSerie.publicVoteAverage = 0;
+                    }
+                    yield existingReview.deleteOne();
+                    yield updatedSerie.save();
+                    return res.status(200).json({ msg: "Review deleted" });
+                }
             }
             catch (error) {
-                return res.status(500).json({
-                    message: "server error",
-                    errors: [
-                        {
-                            type: "server",
-                            value: error,
-                            msg: "there was an error when finding the serie",
-                            path: "MovieManager",
-                            location: "reviewMovie",
-                        },
-                    ],
+                return res.status(500).json({ msg: "Server error", error });
+            }
+        });
+    }
+    getReviews(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { id } = req.params;
+            const { comment } = req.body;
+            try {
+                const reviews = yield main_1.Review.find({ mediaId: id }).populate("owner");
+                if (!reviews) {
+                    return res.status(404).json({ msg: "Reviews not found" });
+                }
+                return res.status(200).json({ msg: "Reviews found", reviews });
+            }
+            catch (error) { }
+        });
+    }
+    addCommentToReview(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { id } = req.params;
+            if (!mongoose_1.default.Types.ObjectId.isValid(id)) {
+                return res.status(400).json({
+                    message: "Invalid Review ID",
+                    status: 400,
                 });
+            }
+            const { comment } = req.body;
+            const review = yield main_1.Review.findById(id);
+            if (!review) {
+                return res.status(404).json({ msg: "Review not found" });
+            }
+            const owner = yield main_1.Usuario.findById(req.user_id);
+            if (!owner) {
+                return res.status(404).json({ msg: "User not found" });
+            }
+            try {
+                const Comment = yield main_1.Review.create({
+                    rating: 0,
+                    review: comment,
+                    mediaId: review.mediaId,
+                    owner: req.user_id,
+                    type: owner.isCritic ? "critic" : "public",
+                    isComment: true,
+                });
+                return res.status(200).json({ msg: "Comment added", Comment });
+            }
+            catch (error) {
+                return res.status(500).json({ msg: "Server error", error });
             }
         });
     }

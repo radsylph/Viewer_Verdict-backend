@@ -26,6 +26,15 @@ const ReviewSchema = new mongoose_1.default.Schema({
         required: false,
         default: false,
     },
+    type: {
+        type: String,
+        required: true,
+    },
+    isComment: {
+        type: Boolean,
+        required: false,
+        default: false,
+    },
 });
 const Review = mongoose_1.default.model("Review", ReviewSchema);
 exports.default = Review;
