@@ -23,6 +23,15 @@ const ReviewSchema = new mongoose.Schema<ReviewInterface>({
     required: false,
     default: false,
   },
+  type: {
+    type: String,
+    required: true,
+  },
+  isComment: {
+    type: Boolean,
+    required: false,
+    default: false,
+  },
 });
 
 const Review = mongoose.model("Review", ReviewSchema);

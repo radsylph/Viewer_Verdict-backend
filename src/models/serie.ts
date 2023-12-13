@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import { SerieInterface } from "../interfaces/main";
 
 const SerieSchema = new mongoose.Schema<SerieInterface>({
-  idApi:{
+  idApi: {
     type: Number,
     required: true,
   },
@@ -12,7 +12,7 @@ const SerieSchema = new mongoose.Schema<SerieInterface>({
   },
   overview: {
     type: String,
-    required: true,
+    required: false,
   },
   tagline: {
     type: String,
@@ -50,12 +50,32 @@ const SerieSchema = new mongoose.Schema<SerieInterface>({
     type: String,
     required: true,
   },
-  voteAverage: {
+  publicVoteAverage: {
     type: Number,
     required: false,
     default: 0,
   },
-  voteCount: {
+  publicVoteCount: {
+    type: Number,
+    required: false,
+    default: 0,
+  },
+  publicVoteTotalPoints: {
+    type: Number,
+    required: false,
+    default: 0,
+  },
+  criticVoteAverage: {
+    type: Number,
+    required: false,
+    default: 0,
+  },
+  criticVoteCount: {
+    type: Number,
+    required: false,
+    default: 0,
+  },
+  criticVoteTotalPoints: {
     type: Number,
     required: false,
     default: 0,
