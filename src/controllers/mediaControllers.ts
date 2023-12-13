@@ -30,6 +30,30 @@ const reviewMovie = (req: CustomRequest, res: Response): void => {
   mediaManager.reviewMovie(req, res);
 };
 
+const editReviewMovie = (req: CustomRequest, res: Response): void => {
+  mediaManager.editReviewMovie(req, res);
+};
+
+const deleteReviewMovie = (req: CustomRequest, res: Response): void => {
+  mediaManager.deleteReviewMovie(req, res);
+};
+
+const reviewSerie = (req: CustomRequest, res: Response): void => {
+  mediaManager.reviewSerie(req, res);
+};
+
+const editReviewSerie = (req: CustomRequest, res: Response): void => {
+  mediaManager.editReviewSerie(req, res);
+};
+
+const deleteReviewSerie = (req: CustomRequest, res: Response): void => {
+  mediaManager.deleteReviewSerie(req, res);
+};
+
+const CommentReview = (req: CustomRequest, res: Response): void => {
+  mediaManager.addCommentToReview(req, res);
+};
+
 export {
   searchMedia,
   uploadGenres,
@@ -37,4 +61,10 @@ export {
   getMovie,
   getSerie,
   reviewMovie,
+  editReviewMovie,
+  deleteReviewMovie,
+  reviewSerie,
+  editReviewSerie,
+  deleteReviewSerie,
+  CommentReview,
 };
