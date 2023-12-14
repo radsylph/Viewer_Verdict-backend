@@ -168,14 +168,12 @@ class MediaManager {
       if (!movieReviews) {
         return res.status(200).json({ msg: "Movie from db", movie });
       }
-      return res
-        .status(200)
-        .json({
-          msg: "Movie from db with reviews",
-          movie,
-          publicReviews,
-          criticReviews,
-        });
+      return res.status(200).json({
+        msg: "Movie from db with reviews",
+        movie,
+        publicReviews,
+        criticReviews,
+      });
     } catch (error) {
       return res.status(500).json({
         message: "server error",
@@ -249,10 +247,21 @@ class MediaManager {
       if (!serieReviews) {
         return res.status(200).json({ msg: "Serie from db", serie });
       }
+      const criticReviews = serieReviews.filter(
+        (review) => review.type === "critic"
+      );
+      const publicReviews = serieReviews.filter(
+        (review) => review.type === "public"
+      );
 
       return res
         .status(200)
-        .json({ msg: "Serie from db with reviews", serie, serieReviews });
+        .json({
+          msg: "Serie from db with reviews",
+          serie,
+          criticReviews,
+          publicReviews,
+        });
     } catch (error) {
       return res.status(500).json({
         message: "server error",
