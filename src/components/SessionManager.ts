@@ -379,6 +379,7 @@ class SessionManager {
     return res.status(200).json({
       message: "Usuario logeado",
       token: token,
+      id: usuario.id,
     });
   }
 
