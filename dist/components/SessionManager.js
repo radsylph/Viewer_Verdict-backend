@@ -433,6 +433,11 @@ class SessionManager {
                 .withMessage("Username is required")
                 .run(req);
             yield (0, express_validator_1.check)("profilePicture").optional().run(req);
+            yield (0, express_validator_1.check)("email")
+                .optional()
+                .isEmail()
+                .withMessage("enter a valid email")
+                .run(req);
             const result = (0, express_validator_1.validationResult)(req);
             if (!result.isEmpty()) {
                 return res.status(400).json({
@@ -440,10 +445,13 @@ class SessionManager {
                     error: result.array(),
                 });
             }
-            const { name, lastname, username, profilePicture } = req.body;
+            const { name, lastname, username, profilePicture, email } = req.body;
             try {
                 const Username = yield main_1.Usuario.findOne({
                     username: username,
+                }).exec();
+                const existingEmail = yield main_1.Usuario.findOne({
+                    email: email,
                 }).exec();
                 const myusername = yield main_1.Usuario.findById(req.user.id).exec();
                 if (myusername === null) {
@@ -474,6 +482,20 @@ class SessionManager {
                         ],
                     });
                 }
+                if (existingEmail && existingEmail.email !== myusername.email) {
+                    return res.status(400).json({
+                        message: "there was these errors",
+                        errors: [
+                            {
+                                type: "field",
+                                value: email,
+                                msg: "the email is already registered",
+                                path: "email",
+                                location: "body",
+                            },
+                        ],
+                    });
+                }
                 const user = yield main_1.Usuario.findById(req.user.id).exec();
                 if (user === null) {
                     return res.status(400).json({
@@ -493,6 +515,7 @@ class SessionManager {
                 user.lastname = lastname;
                 user.username = username;
                 user.profilePicture = profilePicture;
+                user.email = email;
                 yield user.save();
                 return res.status(200).json({
                     message: "User edited",
