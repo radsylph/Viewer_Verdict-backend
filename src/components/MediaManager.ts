@@ -3,8 +3,10 @@ import {
   Movie,
   Review,
   Usuario,
-  Genres,
-  genres_list,
+  MovieGenres,
+  SerieGenres,
+  movieGenresList,
+  serieGenresList,
   Serie,
   Media,
 } from "../models/main";
@@ -52,7 +54,7 @@ class MediaManager {
             return false;
           });
           for (const media of medias) {
-            const media_genres = await Genres.find({
+            const media_genres = await MovieGenres.find({
               id: { $in: media.genre_ids },
             });
             const existingMedia = await Media.findOne({ id: media.id });
@@ -61,8 +63,10 @@ class MediaManager {
                 const newMedia: MediaInterface = {
                   title: media.title || media.name.toLowerCase(),
                   overview: media.overview,
-                  poster: media.poster_path,
+                  poster: endpoints.showImages + media.poster_path,
                   type: media.media_type,
+                  releaseDate: media.release_date || media.first_air_date,
+                  popularity: media.popularity,
                   idApi: media.id,
                   genres: media_genres.map((genre) => genre.name),
                 };
@@ -99,6 +103,18 @@ class MediaManager {
     }
   }
 
+  async getMedias(req: CustomRequest, res: Response) {
+    try {
+      const medias = await Media.find();
+      if (!medias) {
+        return res.status(404).json({ msg: "Medias not found" });
+      }
+      return res.status(200).json({ msg: "Medias found", medias });
+    } catch (error) {
+      return res.status(500).json({ msg: "Server error", error });
+    }
+  }
+
   async getMovie(req: CustomRequest, res: Response) {
     const { id } = req.params;
     try {
@@ -114,7 +130,7 @@ class MediaManager {
               );
               return trailers;
             });
-            const movie_genres = await Genres.find({
+            const movie_genres = await MovieGenres.find({
               id: {
                 $in: movieDetailed.data.genres.map((genre: any) => genre.id),
               },
@@ -205,7 +221,7 @@ class MediaManager {
               );
               return serieTrailers;
             });
-            const serie_genres = await Genres.find({
+            const serie_genres = await SerieGenres.find({
               id: {
                 $in: serieDetailed.data.genres.map((genre: any) => genre.id),
               },
@@ -1001,8 +1017,13 @@ class MediaManager {
 
   async uploadGenres(res: Response) {
     try {
-      await Genres.insertMany(genres_list);
-      return res.json({ msg: "Genres", genres: genres_list });
+      await MovieGenres.insertMany(movieGenresList);
+      await SerieGenres.insertMany(serieGenresList);
+      return res.json({
+        msg: "Genres",
+        moves: movieGenresList,
+        series: serieGenresList,
+      });
     } catch (error) {
       return res.json({ msg: "Error uploading genres" });
     }
@@ -1010,9 +1031,10 @@ class MediaManager {
 
   async deleteGenres(res: Response) {
     try {
-      await Genres.deleteMany({});
+      await MovieGenres.deleteMany({});
+      await SerieGenres.deleteMany({});
       return res.status(200).json({
-        message: "Genres deleted",
+        message: "All Genres deleted",
       });
     } catch (error) {
       return res.status(500).json({

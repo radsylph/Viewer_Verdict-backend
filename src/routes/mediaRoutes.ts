@@ -1,6 +1,7 @@
 import express from "express";
 import {
   searchMedia,
+  getMedias,
   uploadGenres,
   deleteGenres,
   getMovie,
@@ -19,6 +20,7 @@ import getUserInfo from "../middlewares/ProtectRutes";
 const router = express.Router();
 
 router.route("/general/:name").get(searchMedia);
+router.route("/general").get(getMedias); 
 
 router.route("/movie/:id").get(getMovie);
 router.route("/movie/:id/review").post(getUserInfo, reviewMovie);

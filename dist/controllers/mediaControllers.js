@@ -1,12 +1,16 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.editCommentReview = exports.CommentReview = exports.deleteReviewSerie = exports.editReviewSerie = exports.reviewSerie = exports.deleteReviewMovie = exports.editReviewMovie = exports.reviewMovie = exports.getSerie = exports.getMovie = exports.deleteGenres = exports.uploadGenres = exports.searchMedia = void 0;
+exports.editCommentReview = exports.CommentReview = exports.deleteReviewSerie = exports.editReviewSerie = exports.reviewSerie = exports.deleteReviewMovie = exports.editReviewMovie = exports.reviewMovie = exports.getSerie = exports.getMovie = exports.deleteGenres = exports.uploadGenres = exports.getMedias = exports.searchMedia = void 0;
 const MediaManager_1 = require("../components/MediaManager");
 const mediaManager = new MediaManager_1.MediaManager();
 const searchMedia = (req, res) => {
     mediaManager.searchMedia(req, res);
 };
 exports.searchMedia = searchMedia;
+const getMedias = (req, res) => {
+    mediaManager.getMedias(req, res);
+};
+exports.getMedias = getMedias;
 const uploadGenres = (req, res) => {
     mediaManager.uploadGenres(res);
 };

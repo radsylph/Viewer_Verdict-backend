@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import { GenreInterface } from "../interfaces/main";
 
-const genreSchema = new mongoose.Schema<GenreInterface>({
+const serieGenreSchema = new mongoose.Schema<GenreInterface>({
   id: {
     type: Number,
     required: true,
@@ -13,6 +13,9 @@ const genreSchema = new mongoose.Schema<GenreInterface>({
   },
 });
 
-const Genres = mongoose.model<GenreInterface>("Genres", genreSchema);
+const SerieGenres = mongoose.model<GenreInterface>(
+  "SerieGenres",
+  serieGenreSchema
+);
 
-export default Genres;
+export default SerieGenres;

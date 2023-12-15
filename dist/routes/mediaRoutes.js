@@ -8,6 +8,7 @@ const mediaControllers_1 = require("../controllers/mediaControllers");
 const ProtectRutes_1 = __importDefault(require("../middlewares/ProtectRutes"));
 const router = express_1.default.Router();
 router.route("/general/:name").get(mediaControllers_1.searchMedia);
+router.route("/general").get(mediaControllers_1.getMedias);
 router.route("/movie/:id").get(mediaControllers_1.getMovie);
 router.route("/movie/:id/review").post(ProtectRutes_1.default, mediaControllers_1.reviewMovie);
 router.route("/movie/:id/review").put(ProtectRutes_1.default, mediaControllers_1.editReviewMovie);

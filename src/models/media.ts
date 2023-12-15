@@ -10,18 +10,27 @@ const mediaSchema = new mongoose.Schema<MediaInterface>({
     type: String,
     required: false,
   },
-  overview: { 
+  overview: {
     type: String,
     required: false,
   },
   poster: {
     type: String,
-    required: true,
+    required: false,
   },
   type: {
     type: String,
     required: true,
   },
+  releaseDate: {
+    type: String,
+    required: false,
+  },
+  popularity: {
+    type: Number,
+    required: false,
+  },
+
   idApi: {
     type: Number,
     required: true,

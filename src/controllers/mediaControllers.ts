@@ -10,6 +10,10 @@ const searchMedia = (req: CustomRequest, res: Response): void => {
   mediaManager.searchMedia(req, res);
 };
 
+const getMedias = (req: CustomRequest, res: Response): void => {
+  mediaManager.getMedias(req, res);
+};
+
 const uploadGenres = (req: CustomRequest, res: Response): void => {
   mediaManager.uploadGenres(res);
 };
@@ -60,6 +64,7 @@ const editCommentReview = (req: CustomRequest, res: Response): void => {
 
 export {
   searchMedia,
+  getMedias,
   uploadGenres,
   deleteGenres,
   getMovie,

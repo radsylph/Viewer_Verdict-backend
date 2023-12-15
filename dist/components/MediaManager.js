@@ -43,7 +43,7 @@ class MediaManager {
                             return false;
                         });
                         for (const media of medias) {
-                            const media_genres = yield main_1.Genres.find({
+                            const media_genres = yield main_1.MovieGenres.find({
                                 id: { $in: media.genre_ids },
                             });
                             const existingMedia = yield main_1.Media.findOne({ id: media.id });
@@ -52,8 +52,10 @@ class MediaManager {
                                     const newMedia = {
                                         title: media.title || media.name.toLowerCase(),
                                         overview: media.overview,
-                                        poster: media.poster_path,
+                                        poster: endpoints_1.endpoints.showImages + media.poster_path,
                                         type: media.media_type,
+                                        releaseDate: media.release_date || media.first_air_date,
+                                        popularity: media.popularity,
                                         idApi: media.id,
                                         genres: media_genres.map((genre) => genre.name),
                                     };
@@ -92,6 +94,20 @@ class MediaManager {
             }
         });
     }
+    getMedias(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const medias = yield main_1.Media.find();
+                if (!medias) {
+                    return res.status(404).json({ msg: "Medias not found" });
+                }
+                return res.status(200).json({ msg: "Medias found", medias });
+            }
+            catch (error) {
+                return res.status(500).json({ msg: "Server error", error });
+            }
+        });
+    }
     getMovie(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             const { id } = req.params;
@@ -103,7 +119,7 @@ class MediaManager {
                             const trailers = trailer.data.results.map((trailer) => endpoints_1.endpoints.showVideo + trailer.key);
                             return trailers;
                         });
-                        const movie_genres = yield main_1.Genres.find({
+                        const movie_genres = yield main_1.MovieGenres.find({
                             id: {
                                 $in: movieDetailed.data.genres.map((genre) => genre.id),
                             },
@@ -183,7 +199,7 @@ class MediaManager {
                             const serieTrailers = trailers.data.results.map((trailer) => endpoints_1.endpoints.showVideo + trailer.key);
                             return serieTrailers;
                         });
-                        const serie_genres = yield main_1.Genres.find({
+                        const serie_genres = yield main_1.SerieGenres.find({
                             id: {
                                 $in: serieDetailed.data.genres.map((genre) => genre.id),
                             },
@@ -900,8 +916,13 @@ class MediaManager {
     uploadGenres(res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                yield main_1.Genres.insertMany(main_1.genres_list);
-                return res.json({ msg: "Genres", genres: main_1.genres_list });
+                yield main_1.MovieGenres.insertMany(main_1.movieGenresList);
+                yield main_1.SerieGenres.insertMany(main_1.serieGenresList);
+                return res.json({
+                    msg: "Genres",
+                    moves: main_1.movieGenresList,
+                    series: main_1.serieGenresList,
+                });
             }
             catch (error) {
                 return res.json({ msg: "Error uploading genres" });
@@ -911,9 +932,10 @@ class MediaManager {
     deleteGenres(res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                yield main_1.Genres.deleteMany({});
+                yield main_1.MovieGenres.deleteMany({});
+                yield main_1.SerieGenres.deleteMany({});
                 return res.status(200).json({
-                    message: "Genres deleted",
+                    message: "All Genres deleted",
                 });
             }
             catch (error) {

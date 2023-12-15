@@ -4,7 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importDefault(require("mongoose"));
-const genreSchema = new mongoose_1.default.Schema({
+const serieGenreSchema = new mongoose_1.default.Schema({
     id: {
         type: Number,
         required: true,
@@ -14,5 +14,5 @@ const genreSchema = new mongoose_1.default.Schema({
         required: true,
     },
 });
-const MovieGenres = mongoose_1.default.model("Genres", genreSchema);
-exports.default = MovieGenres;
+const SerieGenres = mongoose_1.default.model("SerieGenres", serieGenreSchema);
+exports.default = SerieGenres;

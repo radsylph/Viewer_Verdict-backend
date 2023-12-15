@@ -19,11 +19,19 @@ const mediaSchema = new mongoose_1.default.Schema({
     },
     poster: {
         type: String,
-        required: true,
+        required: false,
     },
     type: {
         type: String,
         required: true,
+    },
+    releaseDate: {
+        type: String,
+        required: false,
+    },
+    popularity: {
+        type: Number,
+        required: false,
     },
     idApi: {
         type: Number,
