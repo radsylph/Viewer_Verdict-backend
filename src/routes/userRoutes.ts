@@ -15,6 +15,7 @@ import {
   getUser,
   editUser,
   getAllUsers,
+  getAUser,
 } from "../controllers/userControllers";
 import getUserInfo from "../middlewares/ProtectRutes";
 
@@ -27,6 +28,7 @@ router.route("/testingpug").get(testingpug);
 router.route("/reset_password").get(formReset).post(resetPassword);
 router.route("/reset_password/:token").get(verifyPassword).post(newPassword);
 router.route("/getUser").get(getUserInfo, getUser);
+router.route("/getAUser/:id").get(getUserInfo, getAUser);
 router.route("/getAllUsers").get(getUserInfo, getAllUsers);
 router.route("/editUser").put(getUserInfo, editUser);
 router.get("/pugtest1", pugTest1);

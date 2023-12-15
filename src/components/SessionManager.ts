@@ -384,7 +384,6 @@ class SessionManager {
   }
 
   closeSession(req: Request, res: Response): Response {
-    
     return res.status(200).json({
       message: "Sesion cerrada",
     });
@@ -392,7 +391,33 @@ class SessionManager {
 
   async getUser(req: CustomRequest, res: Response): Promise<Response> {
     try {
-      const user = await Usuario.findById(req.user.id).exec();
+      const user = await Usuario.findById(req.user._id).exec();
+      console.log(user);
+      return res.status(200).json({
+        message: "User found",
+        user: user,
+      });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({
+        message: "there was these errors",
+        errors: [
+          {
+            type: "server",
+            value: "",
+            msg: "there was an error when getting the user",
+            path: "",
+            location: "",
+          },
+        ],
+      });
+    }
+  }
+
+  async getAUser(req: Request, res: Response): Promise<Response> {
+    const { id } = req.params;
+    try {
+      const user = await Usuario.findById(id).exec();
       console.log(user);
       return res.status(200).json({
         message: "User found",

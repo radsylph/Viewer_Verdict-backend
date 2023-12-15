@@ -369,7 +369,35 @@ class SessionManager {
     getUser(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const user = yield main_1.Usuario.findById(req.user.id).exec();
+                const user = yield main_1.Usuario.findById(req.user._id).exec();
+                console.log(user);
+                return res.status(200).json({
+                    message: "User found",
+                    user: user,
+                });
+            }
+            catch (error) {
+                console.log(error);
+                return res.status(500).json({
+                    message: "there was these errors",
+                    errors: [
+                        {
+                            type: "server",
+                            value: "",
+                            msg: "there was an error when getting the user",
+                            path: "",
+                            location: "",
+                        },
+                    ],
+                });
+            }
+        });
+    }
+    getAUser(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { id } = req.params;
+            try {
+                const user = yield main_1.Usuario.findById(id).exec();
                 console.log(user);
                 return res.status(200).json({
                     message: "User found",

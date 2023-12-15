@@ -60,6 +60,10 @@ const getAllUsers = (req: Request, res: Response): void => {
   session.getAllUsers(req, res);
 };
 
+const getAUser = (req: Request, res: Response): void => {
+  session.getAUser(req, res);
+};
+
 const pugTest1 = (req: Request, res: Response): void => {
   res.render("auth/confirm_account", {
     title: "confirm your account",
@@ -97,4 +101,5 @@ export {
   getUser,
   getAllUsers,
   editUser,
+  getAUser,
 };
