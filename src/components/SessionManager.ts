@@ -384,6 +384,7 @@ class SessionManager {
   }
 
   closeSession(req: Request, res: Response): Response {
+    
     return res.status(200).json({
       message: "Sesion cerrada",
     });

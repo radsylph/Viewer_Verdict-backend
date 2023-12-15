@@ -241,9 +241,11 @@ class MediaManager {
           .status(200)
           .json({ msg: "Serie from api", serie: serieDetails });
       }
-      const serieReviews = await Review.find({ mediaId: serie._id }).populate(
-        "owner"
-      );
+      const serieReviews = await Review.find({
+        mediaId: serie._id,
+        replyTo: { $exists: true, $ne: null },
+      }).populate(["owner", "replyTo"]);
+
       if (!serieReviews) {
         return res.status(200).json({ msg: "Serie from db", serie });
       }
@@ -254,14 +256,12 @@ class MediaManager {
         (review) => review.type === "public"
       );
 
-      return res
-        .status(200)
-        .json({
-          msg: "Serie from db with reviews",
-          serie,
-          criticReviews,
-          publicReviews,
-        });
+      return res.status(200).json({
+        msg: "Serie from db with reviews",
+        serie,
+        criticReviews,
+        publicReviews,
+      });
     } catch (error) {
       return res.status(500).json({
         message: "server error",
@@ -953,6 +953,34 @@ class MediaManager {
         status: 400,
       });
     }
+    const { comment, reply } = req.body;
+    const review = await Review.findById(id);
+    if (!review) {
+      return res.status(404).json({ msg: "Review not found" });
+    }
+    const owner = await Usuario.findById(req.user_id);
+    if (!owner) {
+      return res.status(404).json({ msg: "User not found" });
+    }
+    try {
+      const replyTo = await Review.findOne({ _id: id }).populate("owner");
+      const Comment: any = await Review.create({
+        rating: 0,
+        review: comment,
+        mediaId: review.mediaId,
+        owner: req.user_id,
+        type: owner.isCritic ? "critic" : "public",
+        isComment: true,
+        replyTo: reply,
+      });
+      return res.status(200).json({ msg: "Comment added", Comment, replyTo });
+    } catch (error) {
+      return res.status(500).json({ msg: "Server error", error });
+    }
+  }
+
+  async editComment(req: CustomRequest, res: Response) {
+    const { id } = req.params;
     const { comment } = req.body;
     const review = await Review.findById(id);
     if (!review) {
@@ -963,18 +991,12 @@ class MediaManager {
       return res.status(404).json({ msg: "User not found" });
     }
     try {
-      const Comment = await Review.create({
-        rating: 0,
-        review: comment,
-        mediaId: review.mediaId,
-        owner: req.user_id,
-        type: owner.isCritic ? "critic" : "public",
-        isComment: true,
-      });
-      return res.status(200).json({ msg: "Comment added", Comment });
-    } catch (error) {
-      return res.status(500).json({ msg: "Server error", error });
-    }
+      const updatedComment = await Review.updateOne(
+        { _id: id },
+        { review: comment, edited: true }
+      );
+      return res.status(200).json({ msg: "Comment updated", updatedComment });
+    } catch (error) {}
   }
 
   async uploadGenres(res: Response) {

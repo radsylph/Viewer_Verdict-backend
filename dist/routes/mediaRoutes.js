@@ -17,6 +17,7 @@ router.route("/serie/:id/review").post(ProtectRutes_1.default, mediaControllers_
 router.route("/serie/:id/review").put(ProtectRutes_1.default, mediaControllers_1.editReviewSerie);
 router.route("/serie/:id/review").delete(ProtectRutes_1.default, mediaControllers_1.deleteReviewSerie);
 router.route("/review/:id").post(ProtectRutes_1.default, mediaControllers_1.CommentReview);
+router.route("/response/:id").put(ProtectRutes_1.default, mediaControllers_1.editCommentReview);
 router.route("/admin/uploadGenres").post(mediaControllers_1.uploadGenres);
 router.route("/admin/deleteGenres").delete(mediaControllers_1.deleteGenres);
 exports.default = router;

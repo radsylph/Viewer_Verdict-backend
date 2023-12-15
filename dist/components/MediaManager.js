@@ -219,15 +219,16 @@ class MediaManager {
                         .status(200)
                         .json({ msg: "Serie from api", serie: serieDetails });
                 }
-                const serieReviews = yield main_1.Review.find({ mediaId: serie._id }).populate("owner");
+                const serieReviews = yield main_1.Review.find({
+                    mediaId: serie._id,
+                    replyTo: { $exists: true, $ne: null },
+                }).populate(["owner", "replyTo"]);
                 if (!serieReviews) {
                     return res.status(200).json({ msg: "Serie from db", serie });
                 }
                 const criticReviews = serieReviews.filter((review) => review.type === "critic");
                 const publicReviews = serieReviews.filter((review) => review.type === "public");
-                return res
-                    .status(200)
-                    .json({
+                return res.status(200).json({
                     msg: "Serie from db with reviews",
                     serie,
                     criticReviews,
@@ -850,6 +851,36 @@ class MediaManager {
                     status: 400,
                 });
             }
+            const { comment, reply } = req.body;
+            const review = yield main_1.Review.findById(id);
+            if (!review) {
+                return res.status(404).json({ msg: "Review not found" });
+            }
+            const owner = yield main_1.Usuario.findById(req.user_id);
+            if (!owner) {
+                return res.status(404).json({ msg: "User not found" });
+            }
+            try {
+                const replyTo = yield main_1.Review.findOne({ _id: id }).populate("owner");
+                const Comment = yield main_1.Review.create({
+                    rating: 0,
+                    review: comment,
+                    mediaId: review.mediaId,
+                    owner: req.user_id,
+                    type: owner.isCritic ? "critic" : "public",
+                    isComment: true,
+                    replyTo: reply,
+                });
+                return res.status(200).json({ msg: "Comment added", Comment, replyTo });
+            }
+            catch (error) {
+                return res.status(500).json({ msg: "Server error", error });
+            }
+        });
+    }
+    editComment(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { id } = req.params;
             const { comment } = req.body;
             const review = yield main_1.Review.findById(id);
             if (!review) {
@@ -860,19 +891,10 @@ class MediaManager {
                 return res.status(404).json({ msg: "User not found" });
             }
             try {
-                const Comment = yield main_1.Review.create({
-                    rating: 0,
-                    review: comment,
-                    mediaId: review.mediaId,
-                    owner: req.user_id,
-                    type: owner.isCritic ? "critic" : "public",
-                    isComment: true,
-                });
-                return res.status(200).json({ msg: "Comment added", Comment });
+                const updatedComment = yield main_1.Review.updateOne({ _id: id }, { review: comment, edited: true });
+                return res.status(200).json({ msg: "Comment updated", updatedComment });
             }
-            catch (error) {
-                return res.status(500).json({ msg: "Server error", error });
-            }
+            catch (error) { }
         });
     }
     uploadGenres(res) {

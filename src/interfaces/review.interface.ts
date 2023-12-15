@@ -7,4 +7,5 @@ export interface ReviewInterface {
   type: string;
   createdAt?: Date;
   isComment?: boolean;
+  replyTo?: any;
 }

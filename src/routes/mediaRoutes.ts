@@ -12,6 +12,7 @@ import {
   editReviewSerie,
   deleteReviewSerie,
   CommentReview,
+  editCommentReview,
 } from "../controllers/mediaControllers";
 import getUserInfo from "../middlewares/ProtectRutes";
 
@@ -30,6 +31,7 @@ router.route("/serie/:id/review").put(getUserInfo, editReviewSerie);
 router.route("/serie/:id/review").delete(getUserInfo, deleteReviewSerie);
 
 router.route("/review/:id").post(getUserInfo, CommentReview);
+router.route("/response/:id").put(getUserInfo, editCommentReview);
 
 router.route("/admin/uploadGenres").post(uploadGenres);
 router.route("/admin/deleteGenres").delete(deleteGenres);

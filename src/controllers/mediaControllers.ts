@@ -54,6 +54,10 @@ const CommentReview = (req: CustomRequest, res: Response): void => {
   mediaManager.addCommentToReview(req, res);
 };
 
+const editCommentReview = (req: CustomRequest, res: Response): void => {
+  mediaManager.editComment(req, res);
+};
+
 export {
   searchMedia,
   uploadGenres,
@@ -67,4 +71,5 @@ export {
   editReviewSerie,
   deleteReviewSerie,
   CommentReview,
+  editCommentReview,
 };

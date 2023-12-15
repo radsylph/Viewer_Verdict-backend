@@ -34,6 +34,11 @@ const ReviewSchema = new mongoose.Schema<ReviewInterface>(
       required: false,
       default: false,
     },
+    replyTo: {
+      type: String,
+      required: false,
+      default: "",
+    },
   },
   {
     timestamps: true,
