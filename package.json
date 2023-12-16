@@ -3,12 +3,11 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "tsc-watch --onSuccess \"node dist/index.js\"",
-    "db:imp":"node ./src/seed/seeder -i",
-    "db:des":"node /src/seed/seeder -d"
+    "db:imp": "node ./src/seed/seeder -i",
+    "db:des": "node /src/seed/seeder -d"
   },
   "author": "",
   "license": "ISC",
@@ -24,7 +23,8 @@
     "nodemailer": "^6.9.7",
     "postcss": "^8.4.31",
     "postcss-cli": "^10.1.0",
-    "pug": "^3.0.2"
+    "pug": "^3.0.2",
+    "socket.io": "^4.7.2"
   },
   "devDependencies": {
     "@types/axios": "^0.14.0",

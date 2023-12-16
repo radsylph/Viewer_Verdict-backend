@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Media = exports.serieGenresList = exports.movieGenresList = exports.SerieGenres = exports.MovieGenres = exports.Serie = exports.Review = exports.Movie = exports.Usuario = void 0;
+exports.Chat = exports.Message = exports.Media = exports.serieGenresList = exports.movieGenresList = exports.SerieGenres = exports.MovieGenres = exports.Serie = exports.Review = exports.Movie = exports.Usuario = void 0;
 const usuario_1 = __importDefault(require("./usuario"));
 exports.Usuario = usuario_1.default;
 const movie_1 = __importDefault(require("./movie"));
@@ -21,3 +21,7 @@ Object.defineProperty(exports, "movieGenresList", { enumerable: true, get: funct
 Object.defineProperty(exports, "serieGenresList", { enumerable: true, get: function () { return genres__list_1.serieGenresList; } });
 const media_1 = __importDefault(require("./media"));
 exports.Media = media_1.default;
+const messages_1 = __importDefault(require("./messages"));
+exports.Message = messages_1.default;
+const chat_1 = __importDefault(require("./chat"));
+exports.Chat = chat_1.default;

@@ -6,6 +6,8 @@ import MovieGenres from "./moviegenres";
 import SerieGenres from "./seriegenres";
 import { movieGenresList, serieGenresList } from "./genres.-list";
 import Media from "./media";
+import Message from "./messages";
+import Chat from "./chat";
 
 export {
   Usuario,
@@ -17,4 +19,6 @@ export {
   movieGenresList,
   serieGenresList,
   Media,
+  Message,
+  Chat,
 };

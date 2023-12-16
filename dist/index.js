@@ -14,11 +14,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const dotenv_1 = __importDefault(require("dotenv"));
-dotenv_1.default.config({ path: ".env" });
 const db_1 = __importDefault(require("./config/db"));
 const userRoutes_1 = __importDefault(require("./routes/userRoutes"));
 const mediaRoutes_1 = __importDefault(require("./routes/mediaRoutes"));
+const chatRoutes_1 = __importDefault(require("./routes/chatRoutes"));
 const cors_1 = __importDefault(require("cors"));
+const http_1 = require("http");
+const socket_io_1 = require("socket.io");
+dotenv_1.default.config({ path: ".env" });
 const app = (0, express_1.default)();
 const port = process.env.PORT;
 app.use(express_1.default.urlencoded({ extended: true }));
@@ -27,6 +30,7 @@ app.use((0, cors_1.default)());
 app.use(express_1.default.static("public"));
 app.use("/auth", userRoutes_1.default);
 app.use("/media", mediaRoutes_1.default);
+app.use("/chat", chatRoutes_1.default);
 app.set("view engine", "pug");
 app.set("views", "./views");
 app.use(express_1.default.static("public"));
@@ -41,4 +45,35 @@ try {
 catch (error) {
     console.log(error);
 }
-app.listen(port, () => console.log(`Example app listening on url ${port}!`));
+const httpServer = (0, http_1.createServer)(app);
+const io = new socket_io_1.Server(httpServer, {
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"],
+    },
+    transports: ["websocket", "polling"],
+});
+io.on("connection", (socket) => {
+    console.log("a user connected");
+    socket.on("joinRoom", (data) => {
+        socket.join(data.roomId);
+        console.log("user joined room", data.roomId);
+    });
+    socket.on("leaveRoom", (data) => {
+        socket.leave(data.roomId);
+        console.log("user left room", data.roomId);
+    });
+    socket.on("chatMessage", (message) => {
+        io.to(message.roomId).emit("message", message);
+    });
+    socket.on("disconnect", () => {
+        console.log("user disconnected");
+    });
+    socket.on("privateMessage", (data) => {
+        socket.to(data.to).emit("privateMessage", {
+            from: socket.id,
+            message: data.message,
+        });
+    });
+});
+httpServer.listen(port, () => console.log(`Example app listening on url ${port}!`));

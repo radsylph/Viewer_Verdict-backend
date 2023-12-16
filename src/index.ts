@@ -1,16 +1,16 @@
 import express from "express";
-
 import dotenv from "dotenv";
-dotenv.config({ path: ".env" });
-
 import db from "./config/db";
 import userRouter from "./routes/userRoutes";
 import mediaRouter from "./routes/mediaRoutes";
-
+import chatRouter from "./routes/chatRoutes";
 import cors from "cors";
+import { createServer } from "http";
+import { Server } from "socket.io";
+
+dotenv.config({ path: ".env" });
 
 const app = express();
-
 const port = process.env.PORT;
 
 app.use(express.urlencoded({ extended: true }));
@@ -20,6 +20,7 @@ app.use(express.static("public"));
 
 app.use("/auth", userRouter);
 app.use("/media", mediaRouter);
+app.use("/chat", chatRouter);
 
 app.set("view engine", "pug");
 app.set("views", "./views");
@@ -38,4 +39,45 @@ try {
   console.log(error);
 }
 
-app.listen(port, () => console.log(`Example app listening on url ${port}!`));
+const httpServer = createServer(app);
+const io = new Server(httpServer, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"],
+  },
+  transports: ["websocket", "polling"],
+});
+
+io.on("connection", (socket) => {
+  console.log("a user connected");
+
+  socket.on("joinRoom", (data) => {
+    socket.join(data.roomId);
+    console.log("user joined room", data.roomId);
+  });
+
+  socket.on("leaveRoom", (data) => {
+    socket.leave(data.roomId);
+    console.log("user left room", data.roomId);
+  });
+
+  socket.on("chatMessage", (message) => {
+    io.to(message.roomId).emit("message", message);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("user disconnected");
+  });
+
+  socket.on("privateMessage", (data) => {
+    socket.to(data.to).emit("privateMessage", {
+      from: socket.id,
+      message: data.message,
+    });
+  });
+  
+});
+
+httpServer.listen(port, () =>
+  console.log(`Example app listening on url ${port}!`)
+);
