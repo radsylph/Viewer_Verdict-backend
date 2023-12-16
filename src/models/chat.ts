@@ -9,6 +9,7 @@ const chatSchema = new mongoose.Schema<ChatInterface>({
   messages: {
     type: [String],
     required: true,
+    ref: "Message",
   },
   participants: {
     type: [String],
