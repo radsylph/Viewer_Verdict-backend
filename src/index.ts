@@ -53,7 +53,7 @@ io.on("connection", (socket) => {
 
   socket.on("joinRoom", (data) => {
     socket.join(data.roomId);
-    console.log("user joined room", data.roomId);
+    console.log("user joined room", data.roomId, data);
   });
 
   socket.on("leaveRoom", (data) => {
@@ -62,7 +62,15 @@ io.on("connection", (socket) => {
   });
 
   socket.on("chatMessage", (message) => {
-    io.to(message.roomId).emit("message", message);
+    console.log(message);
+
+    io.to(message.idRoom).emit("messageFromAnother", message);
+  });
+
+  socket.on("getMessages", (data) => {
+    console.log(data);
+    const msg = "bienvenido" + data.user.username;
+    socket.emit("message", msg);
   });
 
   socket.on("disconnect", () => {
