@@ -75,7 +75,6 @@ io.on("connection", (socket) => {
       message: data.message,
     });
   });
-  
 });
 
 httpServer.listen(port, () =>
