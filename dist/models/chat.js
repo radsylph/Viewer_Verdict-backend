@@ -12,6 +12,7 @@ const chatSchema = new mongoose_1.default.Schema({
     messages: {
         type: [String],
         required: true,
+        ref: "Message",
     },
     participants: {
         type: [String],
