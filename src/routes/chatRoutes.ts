@@ -1,19 +1,14 @@
 import express from "express";
 import {
-  joinChat,
-  getPublicChats,
-  getPrivateChats,
-  getMessages,
-  sendMessage,
-  createPrivateChat,
+  getGroupChats,
+  getChatMessages,
+  saveChatMessages,
 } from "../controllers/chatControllers";
 
 const router = express.Router();
 
-router.route("/join/:idRoom").post(joinChat);//privateChats
-router.route("/public").get(getPublicChats); //chat/public
-router.route("/private").get(getPrivateChats);//
-router.route("/private").post(createPrivateChat)//
-router.route("/messages/:idRoom").get(getMessages).post(sendMessage);//getMessges y sendMessages
+router.route("/getGroupChats").get(getGroupChats);
+router.route("/getChatMessages/:idRoom").post(getChatMessages);
+router.route("/saveChatMessages/:idRoom").post(saveChatMessages);
 
 export default router;
