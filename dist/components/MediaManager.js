@@ -282,6 +282,7 @@ class MediaManager {
             const reviewExists = yield main_1.Review.findOne({
                 mediaId: serie._id,
                 owner: req.user_id,
+                isComment: false,
             });
             if (reviewExists) {
                 return res.status(400).json({ msg: "you already reviewed this movie" });
